@@ -1,0 +1,9 @@
+## Interface: 90005
+## Title: Mountable
+## Author: Subcool
+## Version: 0.0.1
+## Notes: This addon sucks
+## DefaultState: Enabled
+
+Libs\embeds.xml
+Core.lua
