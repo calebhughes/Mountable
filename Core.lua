@@ -1,21 +1,46 @@
 local AddOnName, NS = ...
 local LibStub = _G.LibStub
 
-local AddOn = LibStub("AceAddon-3.0"):NewAddon(AddOnName)
-AddOn.defaults = { global = {}, profile = { modules = {["*"] = true} } }
+Mountable = LibStub("AceAddon-3.0"):NewAddon(AddOnName, "AceConsole-3.0", "AceEvent-3.0")
+local Mountable = Mountable
+---------------------------------------------------------
+-- Our db upvalue and db defaults
+local db
+local options
+local dbDefaults = {
+	profile = {
+		enabled       = true,
+    noFlyingMount = true,
+    groups = { },
+	},
+}
 
-NS[1] = AddOn
-NS[2] = nil
-NS[3] = AddOn.defaults.profile
-NS[4] = AddOn.defaults.global
+local dbMountDefaults = {
+  global = {
+    [1] = { }, -- Ground,
+    [2] = { }, -- Flying,
+    [3] = { }, -- Hybrid,
+    [4] = { }, -- Aquatic,
+    lastMountCount = nil
+  }
+}
 
-NS[1].Libs = {}
-NS[1].Libs.ACD = LibStub("AceConfigDialog-3.0-Mountable")
-NS[1].Libs.ACR = LibStub("AceConfigRegistry-3.0")
-
-SLASH_Mountable1 = "/mountable"
-SlashCmdList.Mountable = function(msg)
-  print(AddOnName)
+function Mountable:OnEnable()
+  print(AddOnName.." enabled")
 end
 
-Mountable = NS
+function Mountable:OnDisable()
+  print(AddOnName.." disabled")
+end
+
+function Mountable:OnInitialize()
+  self.db = LibStub("AceDB-3.0"):New("MountableDB", dbDefaults)
+  self.dbMounts = LibStub("AceDB-3.0"):New("MountableMountsDB", dbMountDefaults)
+  self:RegisterChatCommand("mountable", self.HandleSlashCmd)
+end
+
+function Mountable:HandleSlashCmd()
+  LibStub("AceConfigDialog-3.0"):Open("Mountable")
+end
+
+_G["Mountable"] = Mountable

@@ -4,6 +4,9 @@
 ## Version: 0.0.1
 ## Notes: This addon sucks
 ## DefaultState: Enabled
+## SavedVariables: MountableDB, MountableMountsDB
 
 Libs\embeds.xml
+
 Core.lua
+Config\Config.lua
