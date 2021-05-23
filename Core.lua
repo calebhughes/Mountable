@@ -1,13 +1,13 @@
-local AddOnName, NS = ...
+local AddOnName = ...
 local LibStub = _G.LibStub
 
 Mountable = LibStub("AceAddon-3.0"):NewAddon(AddOnName, "AceConsole-3.0", "AceEvent-3.0")
 local Mountable = Mountable
----------------------------------------------------------
--- Our db upvalue and db defaults
-local db
-local options
 local dbDefaults = {
+  global = {
+    useGlobalProfile = false,
+    debugEnabled = false,
+  },
 	profile = {
 		enabled       = true,
     noFlyingMount = true,
@@ -15,14 +15,8 @@ local dbDefaults = {
 	},
 }
 
-local dbMountDefaults = {
-  global = {
-    [1] = { }, -- Ground,
-    [2] = { }, -- Flying,
-    [3] = { }, -- Hybrid,
-    [4] = { }, -- Aquatic,
-    lastMountCount = nil
-  }
+local mountTableDefaults = {
+  lastMountCount = nil,
 }
 
 function Mountable:OnEnable()
@@ -35,8 +29,9 @@ end
 
 function Mountable:OnInitialize()
   self.db = LibStub("AceDB-3.0"):New("MountableDB", dbDefaults)
-  self.dbMounts = LibStub("AceDB-3.0"):New("MountableMountsDB", dbMountDefaults)
+  self.mountTable = LibStub("AceDB-3.0"):New("MountableMountsDB", mountTableDefaults)
   self:RegisterChatCommand("mountable", self.HandleSlashCmd)
+  self:RegisterChatCommand("mtb", self.HandleSlashCmd)
 end
 
 function Mountable:HandleSlashCmd()
