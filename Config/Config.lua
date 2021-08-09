@@ -27,9 +27,42 @@ function M:GetRootOptions()
   return options
 end
 
+function M:GetGeneralOptions()
+  local general = {
+    order = 1,
+    name = "General",
+    type = "group",
+    childGroups = "tab",
+    args = {
+      title = {
+        name = "General Options",
+        type = "header",
+        order = 0
+      },
+      dismountWhileFlying = {
+        name = "Flying Dismount",
+        desc = "Whether to allow dismounting while flying or not",
+        type = "toggle",
+        width = "double",
+        set = function(info, v) M.db.profile.dismountWhileFlying = v end,
+        get = function(info) return M.db.profile.dismountWhileFlying end
+      },
+      preferGround = {
+        name = "Prefer Ground Mount",
+        desc = "When in a non-flying area, prefer mounts that are ground use only",
+        type = "toggle",
+        width = "double",
+        set = function(info,v) M.db.profile.preferGroundMount = v end,
+        get = function(info) return M.db.profile.preferGroundMount end
+      }
+    }
+  }
+  return general
+end
+
 function M:GetGroupOptions()
   local groups = {
-    order = 0,
+    order = 1,
     name = "Groups",
     type = "group",
     childGroups = "tab",
@@ -188,6 +221,7 @@ end
 function M:GetAllOptions()
   M:InitializeMountTable()
   local options = M:GetRootOptions()
+  options.args.general = M:GetGeneralOptions()
   options.args.groups = M:GetGroupOptions()
   return options
 end

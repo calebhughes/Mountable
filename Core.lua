@@ -30,12 +30,22 @@ end
 function Mountable:OnInitialize()
   self.db = LibStub("AceDB-3.0"):New("MountableDB", dbDefaults)
   self.mountTable = LibStub("AceDB-3.0"):New("MountableMountsDB", mountTableDefaults)
-  self:RegisterChatCommand("mountable", self.HandleSlashCmd)
-  self:RegisterChatCommand("mtb", self.HandleSlashCmd)
+  Mountable:RegisterChatCommand("mountable", "HandleSlashCmd")
+  Mountable:RegisterChatCommand("mtb", "HandleSlashCmd")
 end
 
-function Mountable:HandleSlashCmd()
-  LibStub("AceConfigDialog-3.0"):Open("Mountable")
+-- if not given an argument we open the options
+-- otherwise, we assume it's a group and check to summon one
+function Mountable:HandleSlashCmd(input, editbox)
+  if input == "" then
+    LibStub("AceConfigDialog-3.0"):Open("Mountable")
+    return
+  end
+
+  local groupName = Mountable:GetArgs(input, 1)
+  if groupName then
+    Mountable:SummonRandomMount(groupName)
+  end
 end
 
 _G["Mountable"] = Mountable
