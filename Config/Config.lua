@@ -47,13 +47,21 @@ function M:GetGeneralOptions()
         set = function(info, v) M.db.profile.dismountWhileFlying = v end,
         get = function(info) return M.db.profile.dismountWhileFlying end
       },
-      preferGround = {
+      preferGroundMount = {
         name = "Prefer Ground Mount",
         desc = "When in a non-flying area, prefer mounts that are ground use only",
         type = "toggle",
         width = "double",
         set = function(info,v) M.db.profile.preferGroundMount = v end,
         get = function(info) return M.db.profile.preferGroundMount end
+      },
+      aquaticOverride = {
+        name = "Use Aquatic Mount",
+        desc = "When swimming override any group options to mount on an aquatic mount",
+        type = "toggle",
+        width = "double",
+        set = function(info,v) M.db.profile.aquaticOverride =  v end,
+        get = function(info) return M.db.profile.aquaticOverride end
       }
     }
   }
@@ -136,8 +144,8 @@ function M:GetGroupOptions()
           name = vv.name,
           type = "toggle",
           image = vv.icon,
-          get = function() return M:IsMountInGroup(v, vv.spellID) end,
-          set = function() M:HandleMountGroupSet(v, vv.spellID) end
+          get = function() return M:IsMountInGroup(v, vv) end,
+          set = function() M:HandleMountGroupSet(v, vv) end
         }
       end
     end
@@ -146,31 +154,30 @@ function M:GetGroupOptions()
   return groups
 end
 
-function M:IsMountInGroup(group, spellID)
-  if (tContains(group, spellID)) then
+function M:IsMountInGroup(group, mountInfo)
+  if group[mountInfo.spellID] then
     return 1
   else
     return nil
   end
 end
 
-function M:AddMountToGroup(group, spellID)
-  group[#group+1] = spellID
+function M:AddMountToGroup(group, mountInfo)
+  group[mountInfo.spellID] = {
+    mountID = mountInfo.mountID,
+    type = mountInfo.mountType
+  }
 end
 
-function M:RemoveMountFromGroup(group, spellId)
-  for i=1,#group do
-    if group[i] == spellId then
-      table.remove(group, i)
-    end
-  end
+function M:RemoveMountFromGroup(group, spellID)
+  group[spellID] = nil
 end
 
-function M:HandleMountGroupSet(group, spellID)
-  if (tContains(group, spellID)) then
-    M:RemoveMountFromGroup(group, spellID)
+function M:HandleMountGroupSet(group, mountInfo)
+  if group[mountInfo.spellID] then
+    M:RemoveMountFromGroup(group, mountInfo.spellID)
   else
-    M:AddMountToGroup(group, spellID)
+    M:AddMountToGroup(group, mountInfo)
   end
 end
 
@@ -180,17 +187,16 @@ end
 
 function M:InitializeMountTable()
   local mountCount = C_MountJournal.GetNumMounts()
+  if not mountCount or (mountCount == M.mountTable.global.lastMountCount) then return end
 
-  if not mountCount or (mountCount == M.mountTable.lastMountCount) then return end
-
-  M.mountTable.lastMountCount = mountCount
-  M.mountTable.mounts = { }
+  M.mountTable.global.lastMountCount = mountCount
+  M.mountTable.global.mounts = { }
   local _, creatureID, creatureName, spellID, icon, mountType, isUsable, hideOnChar, isCollected, mountID;
   for i=1, mountCount do
     creatureName, spellID, icon, _, isUsable, _, _, _, _, hideOnChar, isCollected, mountID = C_MountJournal.GetDisplayedMountInfo(i);
     if not hideOnChar and isCollected and mountID then
       creatureID, _, _, _, mountType = C_MountJournal.GetMountInfoExtraByID(mountID);
-      M.mountTable.mounts[i] = {
+      M.mountTable.global.mounts[i] = {
         id = i,
         spellID = spellID,
         creatureID = creatureID,
@@ -206,9 +212,8 @@ end
 function M:GetMountTable()
   if M.searchText then
     local mounts = { }
-    for k,v in ipairs(M.mountTable.mounts) do
+    for k,v in ipairs(M.mountTable.global.mounts) do
       if string.find(string.lower(v.name), string.lower(M.searchText)) then
-        -- print("Match: "..v.name)
         mounts[#mounts+1] = v
       end
     end

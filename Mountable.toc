@@ -1,13 +1,12 @@
-## Interface: 90005
+## Interface: 90100
 ## Title: Mountable
 ## Author: Subcool
-## Version: 0.0.1
-## Notes: This addon sucks
+## Version: 1.0.0
+## Notes: Enables you to create groups of mounts to randomly summon
 ## DefaultState: Enabled
 ## SavedVariables: MountableDB, MountableMountsDB
 
 Libs\embeds.xml
-
 Core.lua
 Config\Config.lua
 Mounts.lua

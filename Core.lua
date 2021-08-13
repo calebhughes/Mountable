@@ -5,18 +5,19 @@ Mountable = LibStub("AceAddon-3.0"):NewAddon(AddOnName, "AceConsole-3.0", "AceEv
 local Mountable = Mountable
 local dbDefaults = {
   global = {
-    useGlobalProfile = false,
     debugEnabled = false,
   },
 	profile = {
-		enabled       = true,
-    noFlyingMount = true,
+		enabled = true,
     groups = { },
 	},
 }
 
 local mountTableDefaults = {
-  lastMountCount = nil,
+  global = {
+    lastMountCount = nil,
+    mounts = { }
+  }
 }
 
 function Mountable:OnEnable()

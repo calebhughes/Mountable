@@ -1,4 +1,12 @@
 local M = _G["Mountable"]
+local tContains = tContains
+
+local mountTypes = {
+  ground = 230,
+  flying = 248,
+  aquatic = 254,
+  chauffer = 284
+}
 
 function M:SummonRandomMount(group)
   -- check if already mounted, should we dismount
@@ -13,36 +21,72 @@ function M:SummonRandomMount(group)
     return
   end
 
-  local mountSpellId = M:GetRandomMountFromGroup(group)
-  local mountId = C_MountJournal.GetMountFromSpell(mountSpellId)
-  C_MountJournal.SummonByID(mountId)
+  local mounts = M:GetMountGroup(group)
+
+  -- TODO: Add swimming mount compatibility
+  -- if M:IsSwimming() and M.db.profile.aquaticOverride then
+  --   mounts = M:GetFilteredMountGroup(mounts, mountTypes.aquatic)
+  if M:CanFly() then
+    mounts = M:GetFilteredMountGroup(mounts, mountTypes.flying)
+  elseif not M:CanFly() and M.db.profile.preferGroundMount then
+    mounts = M:GetFilteredMountGroup(mounts, mountTypes.ground)
+  end
+
+  local mount = M:GetRandomMountFromGroup(mounts)
+  -- local mountId = C_MountJournal.GetMountFromSpell(mountSpellId)
+  C_MountJournal.SummonByID(mount.mountID)
 end
 
 -- Get random mount from the group
 -- TODO: Implement flying/ground filter
-function M:GetRandomMountFromGroup(group)
-  local mountGroup = M:GetMountGroupTable(group)
-  if not mountGroup then
-    return
+function M:GetRandomMountFromGroup(mounts)
+  if not mounts then
+    return nil
   end
-  return mountGroup[math.random(#mountGroup)]
+
+  local keyset = { }
+  for k,v in pairs(mounts) do
+    keyset[#keyset+1] = k
+  end
+  return mounts[keyset[math.random(#keyset)]]
 end
 
 -- Check if group exists in our profile or not
-function M:GetMountGroupTable(group)
+function M:GetMountGroup(group)
   if M.db.profile.groups[group] then
     return M.db.profile.groups[group]
   end
   return nil
 end
 
+function M:GetFilteredMountGroup(mounts, mountType)
+  local filteredMounts = { }
+
+  for k,v in pairs(mounts) do
+    if v.type == mountType then
+      filteredMounts[k] = v
+    end
+  end
+
+  --if we have no valid mounts just return the whole group
+  if not next(filteredMounts) then
+    return mounts
+  else
+    return filteredMounts
+  end
+end
+
 -- Expert Riding 34090
 -- Master Riding 90265
 function M:CanFly()
-  if IsFlyableArea and (IsSpellKnown(34090) or IsSpellKnown(90265)) then
+  if IsFlyableArea() and (IsSpellKnown(34090) or IsSpellKnown(90265)) then
     return 1
   end
   return nil
+end
+
+function M:IsSwimming()
+
 end
 
 -- Apprentice Riding 33388
