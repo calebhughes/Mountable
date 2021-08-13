@@ -3,7 +3,6 @@ World of Warcraft mod to allow creating groups of favorite mounts.
 After creating a group you can summon a random mount from the group with a simple command/macro.
 
 ## Commands
----
 
 | Command | Description |
 | --- | --- |
