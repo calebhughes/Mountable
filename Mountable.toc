@@ -9,4 +9,5 @@
 Libs\embeds.xml
 Core.lua
 Config\Config.lua
+Logging\Logging.lua
 Mounts.lua

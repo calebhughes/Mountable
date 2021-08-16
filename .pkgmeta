@@ -14,5 +14,6 @@ externals:
 
 ignore:
   - README.md
+  - LICENSE
 
 license-output: LICENSE.txt

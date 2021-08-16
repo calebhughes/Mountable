@@ -3,16 +3,17 @@ local LibStub = _G.LibStub
 
 Mountable = LibStub("AceAddon-3.0"):NewAddon(AddOnName, "AceConsole-3.0", "AceEvent-3.0")
 local Mountable = Mountable
+Mountable.Log = { }
+
 local dbDefaults = {
   global = {
-    debugEnabled = false,
+    loggingLevel = 0
   },
 	profile = {
 		enabled = true,
     groups = { },
 	},
 }
-
 local mountTableDefaults = {
   global = {
     lastMountCount = nil,
@@ -21,11 +22,11 @@ local mountTableDefaults = {
 }
 
 function Mountable:OnEnable()
-  print(AddOnName.." enabled")
+  Mountable.Log:Debug("Mountable was enabled")
 end
 
 function Mountable:OnDisable()
-  print(AddOnName.." disabled")
+  Mountable.Log:Debug("Mountable was disabled")
 end
 
 function Mountable:OnInitialize()

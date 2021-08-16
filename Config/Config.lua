@@ -39,13 +39,24 @@ function M:GetGeneralOptions()
         type = "header",
         order = 0
       },
+      loggingLevel = {
+        name = "Logging Level",
+        desc = "Determine the amount of messages to log to chat - probably doesn't need to be changed",
+        type = "select",
+        width = "full",
+        values = M.Log.GetOptions,
+        set = function(info,v) M.db.global.loggingLevel = v end,
+        get = function(info) return M.db.global.loggingLevel end,
+        order = 0
+      },
       dismountWhileFlying = {
         name = "Flying Dismount",
         desc = "Whether to allow dismounting while flying or not",
         type = "toggle",
         width = "double",
         set = function(info, v) M.db.profile.dismountWhileFlying = v end,
-        get = function(info) return M.db.profile.dismountWhileFlying end
+        get = function(info) return M.db.profile.dismountWhileFlying end,
+        order = 1
       },
       preferGroundMount = {
         name = "Prefer Ground Mount",
@@ -53,7 +64,8 @@ function M:GetGeneralOptions()
         type = "toggle",
         width = "double",
         set = function(info,v) M.db.profile.preferGroundMount = v end,
-        get = function(info) return M.db.profile.preferGroundMount end
+        get = function(info) return M.db.profile.preferGroundMount end,
+        order = 1
       },
       aquaticOverride = {
         name = "Use Aquatic Mount",
@@ -61,7 +73,8 @@ function M:GetGeneralOptions()
         type = "toggle",
         width = "double",
         set = function(info,v) M.db.profile.aquaticOverride =  v end,
-        get = function(info) return M.db.profile.aquaticOverride end
+        get = function(info) return M.db.profile.aquaticOverride end,
+        order = 1
       }
     }
   }
