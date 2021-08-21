@@ -1,5 +1,6 @@
 local M = _G["Mountable"]
 local tContains = tContains
+local next = next
 
 local mountTypes = {
   ground = 230,
@@ -21,26 +22,23 @@ function M:SummonRandomMount(group)
     return
   end
 
-  local mounts = M:GetMountGroup(group)
-
-  -- TODO: Add swimming mount compatibility
-  -- if M:IsSwimming() and M.db.profile.aquaticOverride then
-  --   mounts = M:GetFilteredMountGroup(mounts, mountTypes.aquatic)
-  if M:CanFly() then
-    mounts = M:GetFilteredMountGroup(mounts, mountTypes.flying)
+  local mountGroup = M:GetMountGroup(group)
+  local mount = {}
+  if M:CanMountSwimming() and M.db.profile.aquaticOverride then
+    mount = M:GetAquaticMount(mountGroup)
+  elseif M:CanFly() then
+    mount = M:GetFlyingMount(mountGroup)
   elseif not M:CanFly() and M.db.profile.preferGroundMount then
-    mounts = M:GetFilteredMountGroup(mounts, mountTypes.ground)
+    mount = M:GetGroundMount(mountGroup)
   end
 
-  local mount = M:GetRandomMountFromGroup(mounts)
-  -- local mountId = C_MountJournal.GetMountFromSpell(mountSpellId)
-  C_MountJournal.SummonByID(mount.mountID)
+  if not mount then M.Log:Warning("No valid mounts were found in group: "..group)
+  else C_MountJournal.SummonByID(mount.mountID) end
 end
 
 -- Get random mount from the group
--- TODO: Implement flying/ground filter
 function M:GetRandomMountFromGroup(mounts)
-  if not mounts then
+  if not mounts or not next(mounts) then
     return nil
   end
 
@@ -59,6 +57,46 @@ function M:GetMountGroup(group)
   return nil
 end
 
+function M:GetFlyingMount(mountGroup)
+  local validMounts = M:GetFilteredMountGroup(mountGroup, mountTypes.flying)
+  local mount = M:GetRandomMountFromGroup(validMounts)
+  if not mount then M.Log:Debug("Attempted flying mount summon - No valid mounts found") end
+  return mount
+end
+
+function M:GetGroundMount(mountGroup)
+  local validMounts = M:GetFilteredMountGroup(mountGroup, mountTypes.ground)
+  local mount = M:GetRandomMountFromGroup(validMounts)
+  if not mount then M.Log:Debug("Attempted ground mount summon - No valid mounts found") end
+  return mount
+end
+
+function M:GetAquaticMount(mountGroup)
+  local validMounts = M:GetAquaticMountFromGroup(mountGroup)
+  -- if we don't have any water mounts in the specific group, check global collection
+  if not next(validMounts) then
+    validMounts = M:GetAquaticMountFromCollection()
+  end
+
+  local mount = M:GetRandomMountFromGroup(validMounts)
+  if not mount then M.Log:Debug("Attempted aquatic mount summon - No valid mounts found") end
+  return mount
+end
+
+function M:GetAquaticMountFromGroup(mountGroup)
+  return M:GetFilteredMountGroup(mountGroup, mountTypes.aquatic)
+end
+
+function M:GetAquaticMountFromCollection()
+  local validMounts = {}
+  for k,v in ipairs(M.mountTable.global.mounts) do
+    if v.mountType == mountTypes.aquatic then
+      validMounts[v.spellID] = { mountID = v.mountID }
+    end
+  end
+  return validMounts
+end
+
 function M:GetFilteredMountGroup(mounts, mountType)
   local filteredMounts = { }
 
@@ -67,13 +105,7 @@ function M:GetFilteredMountGroup(mounts, mountType)
       filteredMounts[k] = v
     end
   end
-
-  --if we have no valid mounts just return the whole group
-  if not next(filteredMounts) then
-    return mounts
-  else
-    return filteredMounts
-  end
+  return filteredMounts
 end
 
 -- Expert Riding 34090
@@ -85,8 +117,21 @@ function M:CanFly()
   return nil
 end
 
-function M:IsSwimming()
+function M:CanMountSwimming()
+  -- if true, need to check if we're at the surface or underwater
+  return (IsSwimming() or IsSubmerged()) and not M:AtSurface()
+end
 
+-- Need to use this to check if we're underwater
+-- Method for checking borrowed from Pets And Mounts Addon <3
+function M:AtSurface()
+  local timer, _, _, rate = GetMirrorTimerInfo(2);
+  if(timer == "BREATH" and rate > -1) then
+    M.Log:Debug("At surface")
+    return 1
+  end
+  -- TODO: check for water breathing buffs
+  if(timer == "UNKNOWN") then return nil end
 end
 
 -- Apprentice Riding 33388

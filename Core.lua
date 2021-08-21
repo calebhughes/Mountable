@@ -11,6 +11,9 @@ local dbDefaults = {
   },
 	profile = {
 		enabled = true,
+    dismountWhileFlying = false,
+    preferGroundMount = false,
+    aquaticOverride = true,
     groups = { },
 	},
 }
