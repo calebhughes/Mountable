@@ -34,6 +34,8 @@ function M:SummonRandomMount(group)
     if not mount then
       mount = M:GetFlyingMount(mountGroup)
     end
+  else
+    mount = M:GetRandomMountFromGroup(mountGroup)
   end
 
   if not mount then M.Log:Warning("No valid mounts were found in group: "..group)
