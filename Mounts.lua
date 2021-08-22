@@ -30,6 +30,10 @@ function M:SummonRandomMount(group)
     mount = M:GetFlyingMount(mountGroup)
   elseif not M:CanFly() and M.db.profile.preferGroundMount then
     mount = M:GetGroundMount(mountGroup)
+    -- if no ground mounts in group get a flying mount
+    if not mount then
+      mount = M:GetFlyingMount(mountGroup)
+    end
   end
 
   if not mount then M.Log:Warning("No valid mounts were found in group: "..group)
